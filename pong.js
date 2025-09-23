@@ -4,6 +4,7 @@ const affichageScore = document.getElementById("score");
 const newGame = document.querySelectorAll("newGame");
 let score = 0;
 let raf;
+let chrono;
 
 class Balle {
     constructor(x, y, radius) {
@@ -24,7 +25,7 @@ class Balle {
         ctx.closePath();
     }
 
-    mouvementBalle() {
+    mouvementBalle(bar) {
         this.x += this.vx;
         this.y += this.vy;
     
@@ -34,9 +35,24 @@ class Balle {
         if (this.x + this.vx > canvas.width || this.x + this.vx < 0) {
             this.vx = -this.vx;
         }
-    
-        this.afficherBalle();
-        raf = window.requestAnimationFrame(() => this.mouvementBalle());
+
+        if (
+        this.y + this.radius >= bar.y &&
+        this.x + this.radius >= bar.x &&
+        this.x - this.radius <= bar.x + bar.width
+        ) {
+            this.vy = -Math.abs(this.vy);
+            this.y = bar.y - this.radius;
+        }
+
+        if (this.y + this.radius > canvas.height) {
+            window.cancelAnimationFrame(raf);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);   
+            document.getElementById("game_over").style.display = "block";
+            affichageScore.innerText = score;
+            clearInterval(chrono);
+        }
+            
     }
     
 }
@@ -58,19 +74,17 @@ class Bar {
     }
 
     mouvementBar() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-        this.afficherBar();
-        raf = window.requestAnimationFrame(() => this.mouvementBar());
+
     }
 }
 
 function update(balle, bar) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    balle.mouvementBalle();
+    balle.mouvementBalle(bar);
     bar.mouvementBar();
-    raf = window.requestAnimationFrame(update);
-
+    balle.afficherBalle();
+    bar.afficherBar();
+    raf = window.requestAnimationFrame(() => update(balle, bar));
 }
 
 
@@ -83,11 +97,8 @@ function NewGame() {
     score = 0;
     affichageScore.innerHTML = score;
     let balle = new Balle(50, 50, 10);
-    let bar = new Bar(canvas.width/2 - 50, canvas.height-30, 10, 100);
-    console.log(bar.x);
-    bar.afficherBar();
-    balle.afficherBalle();
-    let chrono = window.setInterval(timer, 1000);
+    let bar = new Bar(canvas.width / 2 - 50, canvas.height - 30, 10, 100);
+    chrono = window.setInterval(timer, 1000);
     update(balle, bar);
 }
 
