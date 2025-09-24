@@ -2,9 +2,16 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const affichageScore = document.getElementById("score");
 const newGame = document.querySelectorAll("newGame");
+const fleche_g = document.getElementById("fleche_g");
+const fleche_d = document.getElementById("fleche_d");
 let score = 0;
 let raf;
 let chrono;
+let perdu = false;
+let droite = false;
+let gauche = false;
+let starttime = null;
+
 
 class Balle {
     constructor(x, y, radius) {
@@ -25,7 +32,7 @@ class Balle {
         ctx.closePath();
     }
 
-    mouvementBalle(bar) {
+    mouvementBalle() {
         this.x += this.vx;
         this.y += this.vy;
     
@@ -46,11 +53,8 @@ class Balle {
         }
 
         if (this.y + this.radius > canvas.height) {
-            window.cancelAnimationFrame(raf);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);   
-            document.getElementById("game_over").style.display = "block";
-            affichageScore.innerText = score;
-            clearInterval(chrono);
+            
+            perdu = true;
         }
             
     }
@@ -63,45 +67,117 @@ class Bar {
         this.y = y;
         this.height = height;
         this.width = width;
-        this.vy = 20;  
+        this.vy = 10;  
     }
 
     afficherBar(){
-        ctx.fillStyle = "black";
+        ctx.fillStyle = "blue";
         ctx.fillRect(this.x,this.y,this.width,this.height);
-        ctx.strokeRect(this.x,this.y,this.width,this.height);
+        //ctx.strokeRect(this.x,this.y,this.width,this.height);
         
     }
 
-    mouvementBar() {
-
+    deplacerBarGauche(){
+        if(bar.x > 0){
+            this.x -= this.vy;
+        }
     }
+
+    deplacerBarDroite(){
+        if(bar.x + bar.width < canvas.width){
+            this.x += this.vy;
+        }
+    }
+
+    mouvementBar(){
+        if(droite){
+            this.deplacerBarDroite();
+        }
+        else if(gauche){
+            this.deplacerBarGauche();
+        }
+    }
+           
 }
 
-function update(balle, bar) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    balle.mouvementBalle(bar);
-    bar.mouvementBar();
+let balle = new Balle(50, 50, 0);
+let bar = new Bar(canvas.width / 2 - canvas.width/10, canvas.height - 15, 10, canvas.width/5);
+
+function update(timeStamp) {
+    if (perdu) {
+        document.getElementById("game_over").style.display = "block";
+        affichageScore.innerText = score;
+    }
+    else{
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        balle.mouvementBalle();
+        bar.mouvementBar();
+        timer(timeStamp);
+    }
     balle.afficherBalle();
     bar.afficherBar();
-    raf = window.requestAnimationFrame(() => update(balle, bar));
+
+    requestAnimationFrame(update);
 }
 
+document.addEventListener('keydown', function(event) {
+        if (event.key === "ArrowLeft") {
+            gauche = true;
+        } 
+        else if (event.key === "ArrowRight") {
+            droite = true;
+        }
+});
 
-function timer(){
-    affichageScore.innerText = score;
-    score = score + 1;
+document.addEventListener('touchstart', function(event) {
+        if (event.bouton === "fleche_g") {
+            gauche = true;
+        } 
+        else if (event.bouton === "fleche_d") {
+            droite = true;
+        }
+});
+
+document.addEventListener('keyup', function(event) {
+        if (event.key === "ArrowLeft") {
+            gauche = false;
+        } 
+        else if (event.key === "ArrowRight") {
+            droite = false;
+        }
+});
+
+document.addEventListener('touchend', function(event) {
+        if (event.bouton === "fleche_g") {
+            gauche = false;
+        } 
+        else if (event.bouton === "fleche_d") {
+            droite = false;
+        }
+});
+
+function timer(timeStamp){
+    if(starttime === null){
+        starttime = timeStamp;
+    }
+    const elapsed = (timeStamp - starttime) / 1000;
+    affichageScore.textContent = elapsed.toFixed(0);
 }
 
 function NewGame() {
+    balle = new Balle(canvas.width / 2, canvas.height / 2, 10);
+    bar = new Bar(canvas.width / 2 - canvas.width/10, canvas.height - 15, 10, canvas.width/5);
+    perdu = false;
+    starttime = null;
+    document.getElementById("game_over").style.display = "none";
     score = 0;
+    let angle = Math.random() * Math.PI * 2;
+    balle.vx = Math.cos(angle) * 5;
+    balle.vy = Math.sin(angle) * 5;
     affichageScore.innerHTML = score;
-    let balle = new Balle(50, 50, 10);
-    let bar = new Bar(canvas.width / 2 - 50, canvas.height - 30, 10, 100);
     chrono = window.setInterval(timer, 1000);
-    update(balle, bar);
 }
 
-
+update();
 
 
