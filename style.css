@@ -9,3 +9,16 @@ canvas{
 body{
     text-align: center;
 }
+
+#fleche_g, #fleche_d {
+    width: 80px;
+    height: 80px;
+    font-size: 60px;
+    color: black;
+    border-radius: 50%;
+    margin: 10px;
+    border: 2px solid #333;
+    background: #f0f0f0;
+    display: inline-block;
+    vertical-align: middle;
+}
