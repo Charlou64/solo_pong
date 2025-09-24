@@ -106,9 +106,9 @@ let bar = new Bar(canvas.width / 2 - canvas.width/10, canvas.height - 15, 10, ca
 function update(timeStamp) {
     if (perdu) {
         document.getElementById("game_over").style.display = "block";
-        affichageScore.innerText = score;
+        window.clearInterval(chrono);
     }
-    else{
+    else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         balle.mouvementBalle();
         bar.mouvementBar();
@@ -129,14 +129,14 @@ document.addEventListener('keydown', function(event) {
         }
 });
 
-document.addEventListener('touchstart', function(event) {
-        if (event.bouton === "fleche_g") {
-            gauche = true;
-        } 
-        else if (event.bouton === "fleche_d") {
-            droite = true;
-        }
-});
+//document.addEventListener('touchstart', function(event) {
+//        if (event.bouton === "fleche_g") {
+//            gauche = true;
+//        } 
+//        else if (event.bouton === "fleche_d") {
+//            droite = true;
+//        }
+//});
 
 document.addEventListener('keyup', function(event) {
         if (event.key === "ArrowLeft") {
@@ -147,13 +147,26 @@ document.addEventListener('keyup', function(event) {
         }
 });
 
-document.addEventListener('touchend', function(event) {
-        if (event.bouton === "fleche_g") {
-            gauche = false;
-        } 
-        else if (event.bouton === "fleche_d") {
-            droite = false;
-        }
+//document.addEventListener('touchend', function(event) {
+//        if (event.bouton === "fleche_g") {
+//            gauche = false;
+//        } 
+//        else if (event.bouton === "fleche_d") {
+//            droite = false;
+//        }
+//});
+
+document.getElementById("fleche_g").addEventListener("touchstart", function() {
+    gauche = true;
+});
+document.getElementById("fleche_g").addEventListener("touchend", function() {
+    gauche = false;
+});
+document.getElementById("fleche_d").addEventListener("touchstart", function() {
+    droite = true;
+});
+document.getElementById("fleche_d").addEventListener("touchend", function() {
+    droite = false;
 });
 
 function timer(timeStamp){
@@ -170,11 +183,10 @@ function NewGame() {
     perdu = false;
     starttime = null;
     document.getElementById("game_over").style.display = "none";
-    score = 0;
+    score = 0;  
     let angle = Math.random() * Math.PI * 2;
     balle.vx = Math.cos(angle) * 5;
-    balle.vy = Math.sin(angle) * 5;
-    affichageScore.innerHTML = score;
+    balle.vy = -Math.abs(Math.sin(angle) * 5);
     chrono = window.setInterval(timer, 1000);
 }
 
