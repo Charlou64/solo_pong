@@ -18,8 +18,11 @@ class Balle {
         this.x = x;
         this.y = y;
         this.radius = radius;
-        this.vx = 5;
-        this.vy = 2;
+        this.baseVx = 5;
+        this.baseVy = 2;
+        this.vx = this.baseVx;
+        this.vy = this.baseVy;
+        this.maxSpeed = 5 * Math.max(this.baseVx, this.baseVy);
     }
 
 
@@ -33,30 +36,43 @@ class Balle {
     }
 
     mouvementBalle() {
+
+        let elapsed = (starttime !== null) ? ((performance.now() - starttime) / 1000) : 0;
+        let speedFactor = Math.min(1 + elapsed / 30, 5); 
+        let currentSpeed = Math.min(this.baseVx * speedFactor, this.maxSpeed);
+        let angle = Math.atan2(this.vy, this.vx);
+        let speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+
+        if (speed < currentSpeed) {
+            this.vx = Math.cos(angle) * currentSpeed;
+            this.vy = Math.sin(angle) * currentSpeed;
+        }
+
         this.x += this.vx;
         this.y += this.vy;
-    
+
         if (this.y + this.vy > canvas.height || this.y + this.vy < 0) {
             this.vy = -this.vy;
+            this.vx += (Math.random() - 0.5) * 0.5;
         }
+
         if (this.x + this.vx > canvas.width || this.x + this.vx < 0) {
             this.vx = -this.vx;
+            this.vy += (Math.random() - 0.5) * 0.5;
         }
 
         if (
-        this.y + this.radius >= bar.y &&
-        this.x + this.radius >= bar.x &&
-        this.x - this.radius <= bar.x + bar.width
+            this.y + this.radius >= bar.y &&
+            this.x + this.radius >= bar.x &&
+            this.x - this.radius <= bar.x + bar.width
         ) {
             this.vy = -Math.abs(this.vy);
             this.y = bar.y - this.radius;
         }
 
         if (this.y + this.radius > canvas.height) {
-            
             perdu = true;
         }
-            
     }
     
 }
@@ -185,8 +201,9 @@ function NewGame() {
     document.getElementById("game_over").style.display = "none";
     score = 0;  
     let angle = Math.random() * Math.PI * 2;
-    balle.vx = Math.cos(angle) * 5;
-    balle.vy = -Math.abs(Math.sin(angle) * 5);
+    let baseSpeed = balle.baseVx;
+    balle.vx = Math.cos(angle) * baseSpeed;
+    balle.vy = -Math.abs(Math.sin(angle) * baseSpeed);
     chrono = window.setInterval(timer, 1000);
 }
 
